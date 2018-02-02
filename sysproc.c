@@ -16,15 +16,51 @@ sys_fork(void)
 int
 sys_exit(void)
 {
-  exit();
+
+	int status;
+	argint(0, &status);
+	exit(status);
+
+
+  //exit(0);
   return 0;  // not reached
 }
 
 int
 sys_wait(void)
 {
-  return wait();
+
+	int* status;
+	//	Cast the integer value of status to a char**
+	argptr(0, (char**)&status, sizeof(*status));
+	return wait(status);
+
+
+
+  //return wait(0);
 }
+
+/*	Added sys_waitpid to sysproc.c and syscall.c and syscall.h
+ */
+int
+sys_waitpid(void)
+{
+
+	//	Fetch the pid
+	int pid;
+	int* status;
+	int options;
+
+	//	If error
+	if (argint(0, &pid) < 0 || argptr(0, (char**)&status, sizeof(*status)) < 0
+		|| argint(2, &options) < 0) {
+		return -1;
+	}
+
+	return waitpid(pid, status, options);
+}
+
+
 
 int
 sys_kill(void)
