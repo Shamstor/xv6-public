@@ -32,7 +32,9 @@ sys_wait(void)
 
 	int* status;
 	//	Cast the integer value of status to a char**
-	argptr(0, (char**)&status, sizeof(*status));
+	if (argptr(0, (char**)&status, sizeof(*status)) < 0) {
+		return -1;
+	}
 	return wait(status);
 
 
