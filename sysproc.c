@@ -52,7 +52,7 @@ sys_waitpid(void)
 	int options;
 
 	//	If error
-	if (argint(0, &pid) < 0 || argptr(0, (char**)&status, sizeof(*status)) < 0
+	if (argint(0, &pid) < 0 || argptr(1, (char**)&status, sizeof(*status)) < 0
 		|| argint(2, &options) < 0) {
 		return -1;
 	}
