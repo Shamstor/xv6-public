@@ -31,7 +31,8 @@ int main(int argc, char *argv[])
   
   
 int exitWait(void) {
-	  int pid, ret_pid, exit_status;
+	  int pid; 
+	int ret_pid, exit_status;
        int i;
   // use this part to test exit(int status) and wait(int* status)
  
@@ -59,6 +60,7 @@ int exitWait(void) {
       exit(-1);
     }
   }
+
   return 0;
 }
 
