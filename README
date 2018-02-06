@@ -47,3 +47,16 @@ will need to install a cross-compiler gcc suite capable of producing
 x86 ELF binaries. See http://pdos.csail.mit.edu/6.828/2016/tools.html.
 Then run "make TOOLPREFIX=i386-jos-elf-". Now install the QEMU PC
 simulator and run "make qemu".
+
+-----------------------------------------------------------------------
+
+Added a status field in proc.h to handle the exit status in exit, wait, 
+a new waitpid function.  Updated the exit and wait functions as well as
+all of the user calls.  Added a waitpid function.
+
+void exit(int status); int wait(int* status); int waitpid(int pid, int* 
+status, int options);
+
+Updated Files:
+proc.h proc.c user.h defs.h sysproc.c syscall.h syscall.c usys.S Makefile 
+mytest.c
