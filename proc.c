@@ -284,54 +284,54 @@ exit(int stat)
 int
 wait(int* stat)
 {
-  struct proc *p;
-  int havekids, pid;
-  struct proc *curproc = myproc();
+  	struct proc *p;
+  	int havekids, pid;
+  	struct proc *curproc = myproc();
   
-  acquire(&ptable.lock);
-  for(;;){
-    // Scan through table looking for exited children.
-    havekids = 0;
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != curproc)
-        continue;
-      havekids = 1;
-      if(p->state == ZOMBIE){	// If child's parent is the current process
-				// and the child is a ZOMBIE (aka done running)
-				// Then resurrect the child
-        // Found one.
-        pid = p->pid;		// Store child's pid. Going to return later
-        kfree(p->kstack);	// Free the kernel stack
-        p->kstack = 0;
-        freevm(p->pgdir);
-        p->pid = 0;		// Set child pid to 0
-        p->parent = 0;
-        p->name[0] = 0;
-        p->killed = 0;		// If nonzero, has been killed. Resurrect it
-        p->state = UNUSED;
+  	acquire(&ptable.lock);
+  	for(;;){
+    		// Scan through table looking for exited children.
+    		havekids = 0;
+    		for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      			if(p->parent != curproc)
+        			continue;
+      			havekids = 1;
+      			if(p->state == ZOMBIE){	// If child's parent is the current process
+						// and the child is a ZOMBIE (aka done running)
+						// Then resurrect the child
+        			// Found one.
+	        		pid = p->pid;		// Store child's pid. Going to return later
+        			kfree(p->kstack);	// Free the kernel stack
+        			p->kstack = 0;
+        			freevm(p->pgdir);
+        			p->pid = 0;		// Set child pid to 0
+        			p->parent = 0;
+        			p->name[0] = 0;
+        			p->killed = 0;		// If nonzero, has been killed. Resurrect it
+        			p->state = UNUSED;
 
-	//	Lab1: If stat is not null, update status pointer value with
-	//		child's exit status
-	//	Put above lock release because it is a race condition
-	if (stat != 0) {
-		*stat = p->status;
-	}
+				//	Lab1: If stat is not null, update status pointer value with
+				//		child's exit status
+				//	Put above lock release because it is a race condition
+				if (stat != 0) {
+					*stat = p->status;
+				}
 
 
-        release(&ptable.lock);
-        return pid;
-      }
-    }
+        			release(&ptable.lock);
+        			return pid;
+      			}
+    		}
 
-    // No point waiting if we don't have any children.
-    if(!havekids || curproc->killed){
-      release(&ptable.lock);
-      return -1;
-    }
+    		// No point waiting if we don't have any children.
+    		if(!havekids || curproc->killed){
+      			release(&ptable.lock);
+      			return -1;
+    		}
 
-    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
-    sleep(curproc, &ptable.lock);  //DOC: wait-sleep
-  }
+    		// Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    		sleep(curproc, &ptable.lock);  //DOC: wait-sleep
+  	}
 }
 
 /*	System call must wait for a process (not necessarily a child process) with a pid that equals the inputted pid
