@@ -422,10 +422,17 @@ int setpriority(int pri) {
 	acquire(&ptable.lock);
 
 	if (pri > 31) {
-		p->priority = 31;
+		pri = 31;
+		//p->priority = 31;
 	}
 	else if (pri < 0) {
-		p->priority = 0;
+		pri = 0;
+		//p->priority = 0;
+	}
+
+	if (p->priority > pri) {
+		p->priority = pri;
+		yield();
 	}
 	else {
 		p->priority = pri;
@@ -482,11 +489,13 @@ scheduler(void)
       if(p->state != RUNNABLE)					// If process is not RUNNABLE, skip it
         continue;
 
+
+	// Caused a kernel panic for some reason
 								// If process's priority is a higher number (lower priority), skip it
-		if (p->priority >= c->proc->priority) {
+/*		if (p->priority >= c->proc->priority) {
  	 		continue;
  		}
-
+*/
 
 	// if p->pri < curr priority, switch to p
 
