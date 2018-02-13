@@ -417,7 +417,8 @@ int waitpid(int pidInput, int* stat, int options) {
  */
 int setpriority(int pri) {
 
-	struct proc* p = myproc();
+	struct proc* p;
+	struct proc* curproc = myproc();
 
 	acquire(&ptable.lock);
 
@@ -430,6 +431,27 @@ int setpriority(int pri) {
 		//p->priority = 0;
 	}
 
+	curproc->priority = pri;
+
+	int minPriority = 31;
+
+/*	NEW
+	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+		if (p->priority < minPriority) {
+			minPriority = p->priority;
+		}
+	}
+
+	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+		if (p->priority == minPriority && p->state = RUNNABLE) {
+			yield();
+		}
+	}
+*/
+
+
+
+/*
 	if (p->priority > pri) {
 		p->priority = pri;
 		yield();
@@ -437,7 +459,7 @@ int setpriority(int pri) {
 	else {
 		p->priority = pri;
 	}
-
+*/
 	// if(p->state == RUNNING) {
 	// 	p->priority = p->priority + 1;		// If running, increase its priority
 	// }
@@ -445,7 +467,6 @@ int setpriority(int pri) {
 	// if (p->state == SLEEPING) {
 	// 	p->priority = p->priority - 1;		// If sleeping, decrease its priority
 	// }
-
 
 	release(&ptable.lock);
 
@@ -456,7 +477,8 @@ int setpriority(int pri) {
 
 
 
-
+//	FIND THE HIGHEST PRIORITY (IM GUESSING THE ONES HIGHER THAN CURRENT PROCESS) IN YOUR PRIORITY LIST (NOT SORTED)
+//	THEN FIND WHICH ONE IS RUNNABLE
 
 
 
