@@ -108,6 +108,10 @@ extern int sys_waitpid(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 
+//	Lab2: Added sys_setPriority
+extern int sys_setpriority(void);
+
+
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
@@ -131,6 +135,7 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_waitpid] sys_waitpid,
+[SYS_setpriority] sys_setpriority,
 };
 
 void

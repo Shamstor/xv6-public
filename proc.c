@@ -7,6 +7,12 @@
 #include "proc.h"
 #include "spinlock.h"
 
+/*
+int proc::getPriority(int pri) {
+	return priority;
+}*/
+
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -149,6 +155,13 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
+
+
+	//	Lab2: Give the first user process the highest priority
+	p->priority = 0;
+
+
+
 
   release(&ptable.lock);
 }
@@ -389,6 +402,60 @@ int waitpid(int pidInput, int* stat, int options) {
 
 
 
+
+
+
+
+
+//	--		DOES THIS ACTUALLY GRAB THE CORRECT PROCESS??
+
+
+/*	Set the priority of the process
+ *
+ *	
+ *	Make sure to only call inside a lock
+ */
+int setpriority(int pri) {
+
+	struct proc* p = myproc();
+
+	acquire(&ptable.lock);
+
+	if (pri > 31) {
+		p->priority = 31;
+	}
+	else if (pri < 0) {
+		p->priority = 0;
+	}
+	else {
+		p->priority = pri;
+	}
+
+	// if(p->state == RUNNING) {
+	// 	p->priority = p->priority + 1;		// If running, increase its priority
+	// }
+
+	// if (p->state == SLEEPING) {
+	// 	p->priority = p->priority - 1;		// If sleeping, decrease its priority
+	// }
+
+
+	release(&ptable.lock);
+
+	// yield()
+
+	return p->priority;
+}
+
+
+
+
+
+
+
+
+
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -408,11 +475,20 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
+
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+      if(p->state != RUNNABLE)					// If process is not RUNNABLE, skip it
         continue;
+
+								// If process's priority is a higher number (lower priority), skip it
+		if (p->priority >= c->proc->priority) {
+ 	 		continue;
+ 		}
+
+
+	// if p->pri < curr priority, switch to p
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -420,6 +496,17 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+
+
+
+	//	If a process runs, decrease its priority (a.k.a. increase the number)
+	/*
+	int currpri = p->priority;
+	++currpri;
+	setpriority(currpri);
+	*/
+
+
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -459,7 +546,14 @@ sched(void)
   mycpu()->intena = intena;
 }
 
+
+
 // Give up the CPU for one scheduling round.
+/*	Acquire lock
+ *	Change state to RUNNABLE (a.k.a. Ready)
+ *	Call sched() to save and restore intena
+ *	Release the lock
+ */
 void
 yield(void)
 {
@@ -468,6 +562,8 @@ yield(void)
   sched();
   release(&ptable.lock);
 }
+
+
 
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
@@ -610,3 +706,5 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+

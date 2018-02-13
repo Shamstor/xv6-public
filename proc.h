@@ -55,6 +55,12 @@ struct proc {
 	int status;
 
 
+	// Lab2: Add this field to handle priorities
+	int priority;	
+	//int getPriority();
+
+
+
 
 };
 

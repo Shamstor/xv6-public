@@ -14,6 +14,12 @@ int wait(int*);
 int waitpid(int, int*, int);
 
 
+/*	Lab2: Added system call to set the priority
+ *		Maybe make it a bool or int to check if error occurred??
+ */
+int setpriority(int);
+
+
 
 //int wait(void);
 int pipe(int*);

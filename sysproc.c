@@ -64,6 +64,30 @@ sys_waitpid(void)
 
 
 
+/*	Lab 2:
+ *	Add int sys_setPriority(void)
+ *	Return -1 if error
+ *
+ *	Update in syscall.c and syscall.h
+ */
+int
+sys_setpriority(void)
+{
+
+	int prior;
+	argint(0, &prior);	// Fetch prior from top of user stack
+	
+	return setpriority(prior);
+	//return 0;
+}
+
+
+
+
+
+
+
+
 int
 sys_kill(void)
 {
