@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	
 	int PScheduler(void);
 
-  	printf(1, "\n This program tests the correctness of your lab#2\n");
+  	printf(0, "\n This program tests the correctness of your lab#2\n");
   
 	PScheduler();
 	return 0;
@@ -37,7 +37,7 @@ int PScheduler(void){
 			continue;
 		}
 		else if ( pid == 0) {
-			setpriority(30-10*i);	
+			setpriority(15-10*i);		// og: 30 - 10*i	
 			for (j=0;j<50000;j++) {
 				for(k=0;k<10000;k++) {
 					asm("nop"); 
@@ -64,6 +64,7 @@ int PScheduler(void){
 		}
                 printf(1,"\n if processes with highest priority finished first then its correct \n");
 	}
-			
-	return 0;
+	
+	exit(0);		
+	//return 0;
 }

@@ -58,7 +58,7 @@ struct proc {
 	// Lab2: Add this field to handle priorities
 	int priority;	
 	//int getPriority();
-
+	int old_priority;
 
 
 

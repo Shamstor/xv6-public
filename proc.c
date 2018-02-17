@@ -68,6 +68,7 @@ myproc(void) {
   c = mycpu();
   p = c->proc;
   popcli();
+	//p->priority = 20;
   return p;
 }
 
@@ -94,6 +95,15 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+
+
+
+	//	Set a default priority for a process
+	p->priority = 15;
+
+
+
+
 
   release(&ptable.lock);
 
@@ -229,7 +239,17 @@ fork(void)
 
   np->state = RUNNABLE;
 
+
   release(&ptable.lock);
+
+
+
+
+	// Lab2: Added priority for child
+	np->priority = 20;
+
+
+
 
   return pid;
 }
@@ -407,7 +427,6 @@ int waitpid(int pidInput, int* stat, int options) {
 
 
 
-//	--		DOES THIS ACTUALLY GRAB THE CORRECT PROCESS??
 
 
 /*	Set the priority of the process
@@ -417,68 +436,22 @@ int waitpid(int pidInput, int* stat, int options) {
  */
 int setpriority(int pri) {
 
-	struct proc* p;
-	struct proc* curproc = myproc();
-
-	acquire(&ptable.lock);
-
-	if (pri > 31) {
+	acquire(&ptable.lock);				// Acquire lock
+	struct proc *curproc = myproc();		// Set curproc to current process
+	if (pri > 31) {					// If pri > 31, set it 31. If < 0, set to 0
 		pri = 31;
-		//p->priority = 31;
 	}
 	else if (pri < 0) {
 		pri = 0;
-		//p->priority = 0;
 	}
+	curproc->priority = pri;			// current process gets the inputted priority
+	curproc->state = RUNNABLE;			// Put current process in ready state
+	curproc->old_priority = pri;	// Used for bonus
+	release(&ptable.lock);				// Release lock
+	return curproc->priority;
 
-	curproc->priority = pri;
-
-	int minPriority = 31;
-
-/*	NEW
-	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-		if (p->priority < minPriority) {
-			minPriority = p->priority;
-		}
-	}
-
-	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-		if (p->priority == minPriority && p->state = RUNNABLE) {
-			yield();
-		}
-	}
-*/
-
-
-
-/*
-	if (p->priority > pri) {
-		p->priority = pri;
-		yield();
-	}
-	else {
-		p->priority = pri;
-	}
-*/
-	// if(p->state == RUNNING) {
-	// 	p->priority = p->priority + 1;		// If running, increase its priority
-	// }
-
-	// if (p->state == SLEEPING) {
-	// 	p->priority = p->priority - 1;		// If sleeping, decrease its priority
-	// }
-
-	release(&ptable.lock);
-
-	// yield()
-
-	return p->priority;
 }
 
-
-
-//	FIND THE HIGHEST PRIORITY (IM GUESSING THE ONES HIGHER THAN CURRENT PROCESS) IN YOUR PRIORITY LIST (NOT SORTED)
-//	THEN FIND WHICH ONE IS RUNNABLE
 
 
 
@@ -497,56 +470,89 @@ void
 scheduler(void)
 {
   struct proc *p;
+	struct proc *p1;
+	struct proc *p_run;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+	//int temp;  
+
+
+	//int minPriority = 31;	
+	//int maxPriority = 0;
+
+
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)					// If process is not RUNNABLE, skip it
-        continue;
-
-
-	// Caused a kernel panic for some reason
-								// If process's priority is a higher number (lower priority), skip it
-/*		if (p->priority >= c->proc->priority) {
- 	 		continue;
- 		}
+/*
+	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+		if (p->priority < minPriority && p->state == RUNNABLE) {
+			minPriority = p->priority;
+		}
+	}
 */
 
-	// if p->pri < curr priority, switch to p
+
+
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+
+
+	//minPriority = topPriority();
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      	if(p->state != RUNNABLE)					// If process is not RUNNABLE, skip it
+        	continue;
+
+	p_run = p;		// Current runnable process
+
+
+	for (p1=ptable.proc; p1 < &ptable.proc[NPROC]; p1++) {
+		if (p_run->priority >= p1->priority && p1->state == RUNNABLE) {		// if p1 has a higher priority and its runnable
+			p_run = p1;							// Set the new runnable process
+		}
+	}
+/*
+			c->proc = p1;
+			switchuvm(p1);
+			p1->state = RUNNING;
+
+			swtch(&(c->scheduler), p->context);
+			switchkvm();
+			c->proc = 0;
+		}
+	}
+*/
+
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+
+//	else if (p->state == RUNNABLE && p->priority <= minPriority) {
+	c->proc = p_run;
+      switchuvm(p_run);
+      p_run->state = RUNNING;
 
 
 
-	//	If a process runs, decrease its priority (a.k.a. increase the number)
-	/*
-	int currpri = p->priority;
-	++currpri;
-	setpriority(currpri);
-	*/
 
 
-
-      swtch(&(c->scheduler), p->context);
+      swtch(&(c->scheduler), p_run->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
-    }
+    
+
+	}
+
     release(&ptable.lock);
+
 
   }
 }
