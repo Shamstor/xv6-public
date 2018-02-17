@@ -453,6 +453,25 @@ int setpriority(int pri) {
 }
 
 
+int getpriority(int pid) {
+	struct proc *p;
+	int prior = -1;	// Error checking
+
+	acquire(&ptable.lock);
+
+	for (p=ptable.proc; p < &ptable.proc[NPROC]; ++p) {
+		if (p->pid != pid) {
+			continue;
+		}
+		prior = p->priority;
+
+	}		
+
+	release(&ptable.lock);
+
+	return prior;
+
+}
 
 
 
@@ -515,18 +534,6 @@ scheduler(void)
 			p_run = p1;							// Set the new runnable process
 		}
 	}
-/*
-			c->proc = p1;
-			switchuvm(p1);
-			p1->state = RUNNING;
-
-			swtch(&(c->scheduler), p->context);
-			switchkvm();
-			c->proc = 0;
-		}
-	}
-*/
-
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -538,7 +545,8 @@ scheduler(void)
       p_run->state = RUNNING;
 
 
-
+	//	Lab2: Process is running
+	p_run->priority += 1;
 
 
       swtch(&(c->scheduler), p_run->context);
@@ -630,6 +638,11 @@ sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
   
+
+//	Lab2: Waiting/sleeping
+	p->priority -= 1;
+
+
   if(p == 0)
     panic("sleep");
 

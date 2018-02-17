@@ -81,7 +81,15 @@ sys_setpriority(void)
 	//return 0;
 }
 
+int
+sys_getpriority(void)
+{
 
+	int prior;
+	argint(0, &prior);
+	return getpriority(prior);
+
+}
 
 
 

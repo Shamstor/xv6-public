@@ -113,6 +113,10 @@ int		waitpid(int, int*, int);
 
 //	Lab2: Added setPriority
 int		setpriority(int);
+int		getpriority(int);
+
+
+
 
 
 int             fork(void);

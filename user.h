@@ -18,7 +18,7 @@ int waitpid(int, int*, int);
  *		Maybe make it a bool or int to check if error occurred??
  */
 int setpriority(int);
-
+int getpriority(int);
 
 
 //int wait(void);

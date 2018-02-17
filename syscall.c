@@ -110,6 +110,9 @@ extern int sys_uptime(void);
 
 //	Lab2: Added sys_setPriority
 extern int sys_setpriority(void);
+extern int sys_getpriority(void);
+
+
 
 
 static int (*syscalls[])(void) = {
@@ -136,6 +139,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_waitpid] sys_waitpid,
 [SYS_setpriority] sys_setpriority,
+[SYS_getpriority] sys_getpriority,
 };
 
 void
